@@ -2,16 +2,16 @@ import openai
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
+import config
+
 
 app = Flask(__name__)
 
 # Set OpenAI API key
-openai.api_key = "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"
+openai.api_key = config.openai_api_key
 
 # Your Account Sid and Auth Token from twilio.com/console
-account_sid = "AC6df7a1ad2d679a4f8965d4350be05af0"
-auth_token = "e794e5deaa6780d12465cb0d29130147"
-client = Client(account_sid, auth_token)
+client = Client(config.twilio_account_sid, config.twilio_auth_tokenoken)
 
 
 @app.route("/sms", methods=['GET', 'POST'])
