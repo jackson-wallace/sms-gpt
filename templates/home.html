@@ -1,0 +1,52 @@
+<!-- home.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chatbot Assistant</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='home.css') }}"
+    />
+  </head>
+  <body>
+    <header>
+      <h1>Chatbot Assistant</h1>
+      <p>Get instant answers to your questions with our chatbot assistant</p>
+    </header>
+    <main>
+      <section id="features">
+        <h2>Features</h2>
+        <ul>
+          <li>Instant answers to your questions</li>
+          <li>Available 24/7</li>
+          <li>Convenient and easy to use</li>
+        </ul>
+      </section>
+      <section id="pricing">
+        <h2>Pricing</h2>
+        <p>Our chatbot assistant service is available for just $10/month</p>
+        <form action="{{ url_for('create_checkout_session') }}" method="post">
+          <label for="pricing_option">Choose a pricing option:</label><br />
+          <input
+            type="radio"
+            id="monthly"
+            name="pricing_option"
+            value="monthly"
+          />
+          <label for="monthly">Monthly</label><br />
+          <input
+            type="radio"
+            id="yearly"
+            name="pricing_option"
+            value="yearly"
+          />
+          <label for="yearly">Yearly</label><br />
+          <input type="submit" value="Submit" />
+        </form>
+      </section>
+    </main>
+    <footer>
+      <p>Copyright 2021 Chatbot Assistant</p>
+    </footer>
+  </body>
+</html>

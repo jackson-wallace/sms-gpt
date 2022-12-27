@@ -1,7 +1,7 @@
 import openai
 import datetime
 import stripe
-from flask import Flask, request, render_template, url_for
+from flask import Flask, request, render_template, url_for, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 import config
@@ -84,6 +84,48 @@ def sms_ahoy_reply():
 
     return str(resp)
 
+
+@app.route('/create-checkout-session', methods=['POST'])
+def create_checkout_session():
+    pricing_option = request.form['pricing_option']
+    print(pricing_option)
+    
+    # Set the price ID based on the selected pricing option
+    if pricing_option == 'monthly':
+        price_id = 'price_1MJhvzDntfrNaBriGgMwEYLy'
+    elif pricing_option == 'yearly':
+        price_id = 'price_1MJhvzDntfrNaBriE3IlZ7c4'
+    else:
+        # Handle invalid pricing option
+        pass
+
+    # create a Stripe Checkout session
+    checkout_session = stripe.checkout.Session.create(
+        line_items=[
+            {
+                # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                'price': price_id,
+                'quantity': 1,
+            },
+        ],
+        mode='subscription',
+        success_url=url_for('success', _external=True),
+        cancel_url=url_for('cancel', _external=True),
+    )
+
+    return redirect(checkout_session.url, code=303)
+
+@app.route('/home')
+def home():
+    return render_template('home.html')
+
+@app.route('/success')
+def success():
+    return render_template('success.html')
+
+@app.route('/cancel')
+def cancel():
+    return render_template('cancel.html')
 
 
 if __name__ == "__main__":
