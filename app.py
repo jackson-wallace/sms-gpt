@@ -1,7 +1,7 @@
 import openai
 import datetime
 import stripe
-from flask import Flask, request
+from flask import Flask, request, render_template, url_for
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 import config
@@ -21,6 +21,9 @@ db = firestore.client()
 
 # Set OpenAI API key
 openai.api_key = config.openai_api_key
+
+# Set Stripe API key
+stripe.api_key = config.stripe_test_secret_key
 
 # Your Account Sid and Auth Token from twilio.com/console
 client = Client(config.twilio_account_sid, config.twilio_auth_token)
@@ -80,6 +83,7 @@ def sms_ahoy_reply():
     resp.message(response_text)
 
     return str(resp)
+
 
 
 if __name__ == "__main__":
