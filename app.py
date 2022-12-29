@@ -1,14 +1,13 @@
 import openai
 import datetime
 import stripe
-from flask import Flask, request, render_template, url_for, redirect
+from flask import Flask, request, render_template, url_for
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 import config
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
-import pytz
+from firebase_admin import credentials, firestore
+import json
 
 
 # Initialize the Firebase app using the service account credentials
@@ -28,8 +27,9 @@ stripe.api_key = config.stripe_test_secret_key
 # Your Account Sid and Auth Token from twilio.com/console
 client = Client(config.twilio_account_sid, config.twilio_auth_token)
 
-
+# Initialize Flask app
 app = Flask(__name__)
+
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_ahoy_reply():
@@ -44,24 +44,40 @@ def sms_ahoy_reply():
     if not user:
         user_ref.set({
             'first_text_time': datetime.datetime.now(),
-            'subscribed': False
+            'subscribed': False,
+            'stripe_customer_id': None
         })
-        first_text_time = datetime.datetime.now()
 
     # If the user is in the database, retrieve their first text time and subscribed status
     else:
         # Parse the first_text_time string as a timezone-aware datetime object
-        tz = pytz.timezone('UTC')
-        first_text_time = datetime.datetime.fromisoformat(str(user['first_text_time'])).replace(tzinfo=tz)
         subscribed = user['subscribed']
 
-    # Calculate the time difference between now and the user's first text time
-    time_difference = datetime.datetime.now(tz) - first_text_time
-
-    # If the user's first text was more than a week ago and they are not subscribed, send a message asking them to subscribe
-    if time_difference.days > 7 and not subscribed:
+    # If the user's not subscribed, send a message asking them to subscribe
+    if not subscribed:
         
-        response_text = "It's been more than a week since your first text! To continue using our service, please subscribe at www.example.com/subscribe"
+        # Create a stripe checkout session
+        checkout_session = stripe.checkout.Session.create(
+            phone_number_collection={ # Here
+                'enabled': True,      # Here
+            }, 
+            line_items=[
+                {
+                    # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                    'price': 'price_1MJhvzDntfrNaBriGgMwEYLy',
+                    'quantity': 1,
+                },
+            ],
+            mode='subscription',
+            subscription_data={
+                'trial_period_days' : 7,
+                },
+            success_url=url_for('success', _external=True),
+            cancel_url=url_for('cancel', _external=True),
+        )
+
+        # Include a link to the checkout session in the response text
+        response_text = f"It's been more than a week since your first text! To continue using our service, please subscribe at {checkout_session.url}"
         # Start our response
         resp = MessagingResponse()
         # Add a message
@@ -85,39 +101,50 @@ def sms_ahoy_reply():
     return str(resp)
 
 
-@app.route('/create-checkout-session', methods=['POST'])
-def create_checkout_session():
-    pricing_option = request.form['pricing_option']
-    print(pricing_option)
-    
-    # Set the price ID based on the selected pricing option
-    if pricing_option == 'monthly':
-        price_id = 'price_1MJhvzDntfrNaBriGgMwEYLy'
-    elif pricing_option == 'yearly':
-        price_id = 'price_1MJhvzDntfrNaBriE3IlZ7c4'
-    else:
-        # Handle invalid pricing option
-        pass
+@app.route('/webhook', methods=['POST'])
+def handle_webhook():
+    # Extract the request payload
+    payload = request.data
 
-    # create a Stripe Checkout session
-    checkout_session = stripe.checkout.Session.create(
-        line_items=[
-            {
-                # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                'price': price_id,
-                'quantity': 1,
-            },
-        ],
-        mode='subscription',
-        success_url=url_for('success', _external=True),
-        cancel_url=url_for('cancel', _external=True),
-    )
+    # Verify the authenticity of the request using the Stripe-Signature header
+    sig_header = request.headers.get("Stripe-Signature")
 
-    return redirect(checkout_session.url, code=303)
+    # Try to construct the event using the payload and signature
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, "whsec_EYuk89gAUshXjU1XUnX5tKXVyZzJlP0N")
+    except Exception as e:
+        # If an exception is raised, it means the event could not be constructed
+        # This could be due to an invalid payload, signature, or secret key
+        print(f"Failed to construct event: {e}")
+        return "", 400
 
-@app.route('/home')
-def home():
-    return render_template('home.html')
+    # Get the type of the event
+    event_type = event['type']
+
+    # Convert the payload to a dictionary
+    payload_dict = json.loads(payload)
+
+    # Access the customer field
+    customer_id = payload_dict['data']['object']['customer']
+
+    # Retrieve the customer using their ID
+    customer = stripe.Customer.retrieve(customer_id)
+
+    # Extract the phone number from the customer object
+    phone_number = customer['phone']
+
+    if event_type == 'customer.subscription.created':
+        
+        # Update the "subscribed" field in the Firestore database for this customer
+        user_ref = db.collection('user_data').document(phone_number)
+        user_ref.update({
+            'subscribed': True,
+            'stripe_customer_id': customer_id
+        })
+
+    return "", 200
+
+
 
 @app.route('/success')
 def success():
@@ -126,7 +153,6 @@ def success():
 @app.route('/cancel')
 def cancel():
     return render_template('cancel.html')
-
 
 if __name__ == "__main__":
     app.run(debug=True)
