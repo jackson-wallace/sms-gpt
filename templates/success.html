@@ -1,109 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
-      crossorigin="anonymous"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Stripe+Icons&family=Stripe+Sans&display=swap"
-      rel="stylesheet"
-    />
     <style>
       body {
-        font-family: "Stripe Sans", sans-serif;
+        background: linear-gradient(to bottom, #0074d4, #3f6bdd, #0074d4);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      div {
+        padding: 60px;
+      }
+      #animated-text {
+        caret-color: black;
+        user-select: none;
+        font-family: "Roboto", sans-serif;
+      }
+      #animated-text-2 {
+        caret-color: black;
+        user-select: none;
+        font-family: "Roboto", sans-serif;
+      }
+      @media (min-width: 600px) {
+        #animated-text,
+        #animated-text-2 {
+          font-size: 8vw;
+        }
       }
     </style>
-    <title>Thanks for subscribing!</title>
   </head>
-  <body style="background-color: #222; color: #fff">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <a class="navbar-brand" href="#">Personal Assistant Chatbot</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item active">
-            <a class="nav-link" href="#">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#features">Features</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#pricing">Pricing</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#contact">Contact</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-    <div class="container mt-5">
-      <div class="row">
-        <div class="col-lg-6 offset-lg-3">
-          <h1 class="text-center">Thanks for subscribing!</h1>
-          <p class="lead text-center">
-            Your subscription has been successfully processed. You'll be able to
-            start using our chatbot in no time.
-          </p>
-          <a href="#" class="btn btn-primary btn-lg btn-block"
-            >Go to Dashboard</a
-          >
-        </div>
-      </div>
+  <body>
+    <div>
+      <h1 id="animated-text"></h1>
+      <p id="animated-text-2"></p>
     </div>
-    <footer
-      class="bg-dark py-3 mt-5"
-      style="position: fixed; bottom: 0; width: 100%"
-    >
-      <div class="container">
-        <div class="row">
-          <div class="col-md-6">
-            <p class="text-muted">&copy; 2021 Personal Assistant Chatbot</p>
-          </div>
-          <div class="col-md-6">
-            <ul class="nav justify-content-end">
-              <li class="nav-item">
-                <a class="nav-link" href="#">Privacy Policy</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Terms of Service</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </footer>
-    <script
-      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.0/dist/umd/popper.min.js"
-      integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-      integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
-      crossorigin="anonymous"
-    ></script>
   </body>
+  <script>
+    function animateText(elementId, text, interval, callback) {
+      const element = document.getElementById(elementId);
+      let index = 0;
+
+      const timer = setInterval(function () {
+        element.innerHTML += text.charAt(index);
+        index++;
+
+        if (index >= text.length) {
+          clearInterval(timer);
+          if (callback) {
+            callback();
+          }
+        }
+      }, interval);
+    }
+    animateText("animated-text", "You're all set!", 50, function () {
+      animateText(
+        "animated-text-2",
+        "Head back over to your messages to get started.",
+        50
+      );
+    });
+  </script>
 </html>

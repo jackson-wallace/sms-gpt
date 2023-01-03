@@ -1,14 +1,63 @@
-<!DOCTYPE html>
 <html>
   <head>
-    <title>Checkout canceled</title>
-    <link rel="stylesheet" href="style.css" />
+    <style>
+      body {
+        background: linear-gradient(to bottom, #0074d4, #3f6bdd, #0074d4);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      div {
+        padding: 60px;
+      }
+      #animated-text {
+        caret-color: black;
+        user-select: none;
+        font-family: "Roboto", sans-serif;
+      }
+      #animated-text-2 {
+        caret-color: black;
+        user-select: none;
+        font-family: "Roboto", sans-serif;
+      }
+      @media (min-width: 600px) {
+        #animated-text,
+        #animated-text-2 {
+          font-size: 8vw;
+        }
+      }
+    </style>
   </head>
   <body>
-    <section>
-      <p>
-        Forgot to add something to your cart? Shop around then come back to pay!
-      </p>
-    </section>
+    <div>
+      <h1 id="animated-text"></h1>
+      <p id="animated-text-2"></p>
+    </div>
   </body>
+  <script>
+    function animateText(elementId, text, interval, callback) {
+      const element = document.getElementById(elementId);
+      let index = 0;
+
+      const timer = setInterval(function () {
+        element.innerHTML += text.charAt(index);
+        index++;
+
+        if (index >= text.length) {
+          clearInterval(timer);
+          if (callback) {
+            callback();
+          }
+        }
+      }, interval);
+    }
+    animateText("animated-text", "Oops!", 50, function () {
+      animateText(
+        "animated-text-2",
+        "Press the back arrow to continue checkout.",
+        50
+      );
+    });
+  </script>
 </html>
