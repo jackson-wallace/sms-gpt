@@ -1,14 +1,17 @@
+import os
 import openai
 import datetime
 import stripe
 from flask import Flask, request, render_template, url_for, abort, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
-import config
+# import config
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # Initialize the Firebase app using the service account credentials
 cred = credentials.Certificate('./serviceAccountKey.json')
@@ -17,15 +20,23 @@ firebase_admin.initialize_app(cred)
 # Get a reference to the Firestore database
 db = firestore.client()
 
+openai_api_key = os.environ.get('OPENAI_API_KEY')
+stripe_test_secret_key = os.environ.get('STRIPE_TEST_SECRET_KEY')
+twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+twilio_auth_token = os.environ.get('TWILIO_AUTO_TOKEN')
+twilio_phone_number = os.environ.get('TWILIO_PHONE_NUMBER')
+
+
 
 # Set OpenAI API key
-openai.api_key = config.openai_api_key
-
+openai.api_key = openai_api_key
+#print(os.environ['OPENAI_API_KEY'])
+#print(os.environ.get('twilio_account_sid'))
 # Set Stripe API key
-stripe.api_key = config.stripe_test_secret_key
+stripe.api_key = stripe_test_secret_key
 
 # Your Account Sid and Auth Token from twilio.com/console
-client = Client(config.twilio_account_sid, config.twilio_auth_token)
+client = Client(twilio_account_sid, twilio_auth_token)
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -92,7 +103,7 @@ def sms_ahoy_reply():
 
         message = client.messages.create(
                     body=response_text,
-                    from_=config.twilio_phone_number,
+                    from_=twilio_phone_number,
                     to=sender
                 )
 
@@ -109,7 +120,7 @@ def sms_ahoy_reply():
     response_text = response["choices"][0]["text"]
     message = client.messages.create(
                     body=response_text,
-                    from_=config.twilio_phone_number,
+                    from_= twilio_phone_number,
                     to=sender
                 )
 
@@ -184,7 +195,7 @@ def handle_webhook():
 
         message = client.messages.create(
                     body=response_text,
-                    from_=config.twilio_phone_number,
+                    from_=twilio_phone_number,
                     to=phone_number,
                 )
         print(message)
