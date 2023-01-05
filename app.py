@@ -12,8 +12,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Initialize the Firebase app using the service account credentials
-cred = credentials.Certificate(os.environ.get('serviceAccountKey'))
+# Get the value of the environment variable
+json_str = os.environ.get("serviceAccountKey")
+
+# Parse the JSON string
+service_account_key = json.loads(json_str)
+
+# Pass the dictionary to the Certificate function
+cred = credentials.Certificate(service_account_key)
+
 firebase_admin.initialize_app(cred)
 
 # Get a reference to the Firestore database
