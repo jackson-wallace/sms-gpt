@@ -1,10 +1,12 @@
-FROM python:3
-ENV PYTHONUNBUFFERED 1
-ENV PORT 5000
-ENV HOST 0.0.0.0
-EXPOSE 5000
-RUN mkdir /app
+# syntax=docker/dockerfile:1
+
+FROM python:3.8-slim-buster
+
 WORKDIR /app
-COPY requirements.txt /app/
-RUN pip install -r requirements.txt
-COPY . /app/
+
+COPY requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
+
+COPY . .
+
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
