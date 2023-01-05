@@ -78,7 +78,7 @@ def sms_ahoy_reply():
 
         user_ref = db.collection('user_data').document(sender)
         user = user_ref.get().to_dict()
-        if len(user['previous_messages']) > 10:
+        if len(user['previous_messages']) > 40:
             # Use update() to remove the first element of the 'previous_messages' array
             user_ref.update({
                 'previous_messages': firestore.ArrayRemove([previous_messages[0]])
@@ -127,7 +127,7 @@ def sms_ahoy_reply():
     """Respond to incoming messages with a receipt SMS."""
     previous_messages = user['previous_messages']
     context = "\n".join(previous_messages)
-    prompt = f"Respond to this prompt: {message_body}\n Given that the user's previous prompts were:\n{context}"
+    prompt = f"Respond to this prompt: {message_body}\n Given that the conversation up until this prompt was:\n{context}"
     # Use ChatGPT to generate a response
     response = openai.Completion.create(
         engine="text-davinci-003",
@@ -136,6 +136,10 @@ def sms_ahoy_reply():
         temperature=0.7,
     )
     response_text = response["choices"][0]["text"]
+    user_ref.update({
+            'message_count': user['message_count'] + 1,
+            'previous_messages': firestore.ArrayUnion([response_text])
+        })
     message = client.messages.create(
         body=response_text,
         from_= twilio_phone_number,
