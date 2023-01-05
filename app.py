@@ -127,11 +127,11 @@ def sms_ahoy_reply():
     """Respond to incoming messages with a receipt SMS."""
     previous_messages = user['previous_messages']
     context = "\n".join(previous_messages)
+    prompt = f"Respond to this prompt: {message_body}\n Given that the user's previous prompts were:\n{context}"
     # Use ChatGPT to generate a response
     response = openai.Completion.create(
         engine="text-davinci-003",
-        prompt=message_body,
-        context=context,
+        prompt=prompt,
         max_tokens=2048,
         temperature=0.7,
     )
