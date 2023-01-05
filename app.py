@@ -12,21 +12,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-
-# Get the value of the environment variable
-json_str = os.environ.get("serviceAccountKey")
-
-# Parse the JSON string
-try:
-    json_obj = json.loads(json_str)
-    print(json_obj)
-except json.JSONDecodeError:
-    print("The environment variable is not a valid JSON string.")
 # Initialize the Firebase app using the service account credentials
-cred = credentials.Certificate(json_obj)
+cred = credentials.Certificate(os.environ.get('serviceAccountKey'))
 firebase_admin.initialize_app(cred)
-#print(type(os.environ.get("serviceAccountKey")))
+
 # Get a reference to the Firestore database
 db = firestore.client()
 
