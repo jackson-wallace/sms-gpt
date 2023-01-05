@@ -5,7 +5,6 @@ import stripe
 from flask import Flask, request, render_template, url_for, abort, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
-# import config
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
@@ -14,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize the Firebase app using the service account credentials
-cred = credentials.Certificate('./serviceAccountKey.json')
+cred = credentials.Certificate(json.loads(os.environ.get('serviceAccountKey')))
 firebase_admin.initialize_app(cred)
 
 # Get a reference to the Firestore database
