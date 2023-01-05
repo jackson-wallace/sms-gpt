@@ -78,7 +78,7 @@ def sms_ahoy_reply():
 
         user_ref = db.collection('user_data').document(sender)
         user = user_ref.get().to_dict()
-        if len(user['previous_messages']) > 40:
+        if len(user['previous_messages']) > 10:
             # Use update() to remove the first element of the 'previous_messages' array
             user_ref.update({
                 'previous_messages': firestore.ArrayRemove([previous_messages[0]])
