@@ -64,22 +64,31 @@ def sms_ahoy_reply():
             'subscribed': False,
             'stripe_customer_id': None,
             'message_count': 1,
+            'previous_messages': []
         })
 
     # If the user is in the database, retrieve their first text time and subscribed status
     else:
-        # Parse the first_text_time string as a timezone-aware datetime object
-        subscribed = user['subscribed']
 
         # Update the 'message_count' field in the database by incrementing it by 1
         user_ref.update({
             'message_count': user['message_count'] + 1,
+            'previous_messages': firestore.ArrayUnion([message_body])
         })
+
+        user_ref = db.collection('user_data').document(sender)
+        user = user_ref.get().to_dict()
+        if len(user['previous_messages']) > 10:
+            # Use update() to remove the first element of the 'previous_messages' array
+            user_ref.update({
+                'previous_messages': firestore.ArrayRemove([previous_messages[0]])
+            })
 
     # Check if the user is in the database
     user_ref = db.collection('user_data').document(sender)
     user = user_ref.get().to_dict()
     subscribed = user['subscribed']
+    
 
     # If the user's not subscribed, send a message asking them to subscribe
     if not subscribed:
@@ -108,27 +117,30 @@ def sms_ahoy_reply():
         )
 
         message = client.messages.create(
-                    body=response_text,
-                    from_=twilio_phone_number,
-                    to=sender
-                )
+            body=response_text,
+            from_=twilio_phone_number,
+            to=sender
+        )
 
         return str(message)
 
     """Respond to incoming messages with a receipt SMS."""
+    previous_messages = user['previous_messages']
+    context = "\n".join(previous_messages)
     # Use ChatGPT to generate a response
     response = openai.Completion.create(
         engine="text-davinci-003",
-        prompt=f"User: {message_body}\nBot:",
-        max_tokens=1024,
+        prompt=message_body,
+        context=context,
+        max_tokens=2048,
         temperature=0.7,
     )
     response_text = response["choices"][0]["text"]
     message = client.messages.create(
-                    body=response_text,
-                    from_= twilio_phone_number,
-                    to=sender
-                )
+        body=response_text,
+        from_= twilio_phone_number,
+        to=sender
+    )
 
     return str(message)
 
@@ -200,10 +212,10 @@ def handle_webhook():
         )
 
         message = client.messages.create(
-                    body=response_text,
-                    from_=twilio_phone_number,
-                    to=phone_number,
-                )
+            body=response_text,
+            from_=twilio_phone_number,
+            to=phone_number,
+        )
         print(message)
     
     return "", 200
