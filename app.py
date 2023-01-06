@@ -81,7 +81,7 @@ def sms_ahoy_reply():
         if len(user['previous_messages']) > 10:
             # Use update() to remove the first element of the 'previous_messages' array
             user_ref.update({
-                'previous_messages': firestore.ArrayRemove([previous_messages[0]])
+                'previous_messages': firestore.ArrayRemove([previous_messages[0]], [previous_messages[1]])
             })
 
     # Check if the user is in the database
