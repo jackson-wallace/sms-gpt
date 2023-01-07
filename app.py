@@ -79,10 +79,10 @@ def sms_ahoy_reply():
         user_ref = db.collection('user_data').document(sender)
         user = user_ref.get().to_dict()
         previous_messages = user['previous_messages']
-        if len(previous_messages) > 10:
+        if len(previous_messages) > 3:
             # Use update() to remove the first element of the 'previous_messages' array
             user_ref.update({
-                'previous_messages': firestore.ArrayRemove([previous_messages[0:2]])
+                'previous_messages': firestore.ArrayRemove([previous_messages[0]])
             })
             # user_ref.update({
             #     'previous_messages': firestore.ArrayRemove([previous_messages[0]])
@@ -140,10 +140,7 @@ def sms_ahoy_reply():
         temperature=0.7,
     )
     response_text = response["choices"][0]["text"]
-    user_ref.update({
-            'message_count': user['message_count'] + 1,
-            'previous_messages': firestore.ArrayUnion([response_text])
-        })
+
     message = client.messages.create(
         body=response_text,
         from_= twilio_phone_number,
