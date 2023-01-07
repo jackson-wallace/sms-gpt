@@ -26,6 +26,8 @@ firebase_admin.initialize_app(cred)
 # Get a reference to the Firestore database
 db = firestore.client()
 
+
+# Get environment variables
 openai_api_key = os.environ.get('OPENAI_API_KEY')
 stripe_test_secret_key = os.environ.get('STRIPE_TEST_SECRET_KEY')
 twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
@@ -84,9 +86,6 @@ def sms_ahoy_reply():
             user_ref.update({
                 'previous_messages': firestore.ArrayRemove([previous_messages[0]])
             })
-            # user_ref.update({
-            #     'previous_messages': firestore.ArrayRemove([previous_messages[0]])
-            # })
 
     # Check if the user is in the database
     user_ref = db.collection('user_data').document(sender)
@@ -131,7 +130,7 @@ def sms_ahoy_reply():
     """Respond to incoming messages with a receipt SMS."""
     previous_messages = user['previous_messages']
     context = "\n".join(previous_messages)
-    prompt = f"Respond to this prompt: {message_body}\n Given that the conversation up until this prompt was:\n{context}"
+    prompt = f"Respond to this prompt: {message_body}\n Given that the conversation up until this prompt was:\n{context} \n Only refer to the context if the user requests a prompt with an unclear pronoun in their prompt."
     # Use ChatGPT to generate a response
     response = openai.Completion.create(
         engine="text-davinci-003",
