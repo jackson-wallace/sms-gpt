@@ -52,6 +52,7 @@ client = Client(twilio_account_sid, twilio_auth_token)
 
 # Initialize Flask app
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'i-have-a-chair-i-have-a-chair'
 
 
 @app.route("/sms", methods=['GET', 'POST'])
