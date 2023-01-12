@@ -2,7 +2,7 @@ import os
 import openai
 import datetime
 import stripe
-from flask import Flask, request, render_template, url_for, abort, redirect
+from flask import Flask, request, render_template, url_for, abort, redirect, session
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 import firebase_admin
@@ -11,6 +11,10 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
+
+start_chat_log = '''Human: Hello, who are you?
+AI: I am doing great. How can I help you today?
+'''
 
 # Get the value of the environment variable
 json_str = os.environ.get("serviceAccountKey")
@@ -128,17 +132,24 @@ def sms_ahoy_reply():
         return str(message)
 
     """Respond to incoming messages with a receipt SMS."""
-    previous_messages = user['previous_messages']
-    context = "\n".join(previous_messages)
-    prompt = f"Respond to this prompt: {message_body}\n Given that the conversation up until this prompt was:\n{context} \n Only refer to the context if the user requests a prompt with an unclear pronoun in their prompt."
+    chat_log = session.get('chat_log')
+
+    if chat_log is None:
+        chat_log = start_chat_log
+
+    prompt = f'{chat_log}Human: {message_body}\nAI:'
+    # prompt = f"Respond to this prompt: {message_body}\n Given that the conversation up until this prompt was:\n{context} \n Only refer to the context if the user requests a prompt with an unclear pronoun in their prompt."
     # Use ChatGPT to generate a response
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=prompt,
         max_tokens=2048,
         temperature=0.7,
+        stop=['\nHuman'],
     )
     response_text = response["choices"][0]["text"]
+
+    session['chat_log'] = append_interaction_to_chat_log(message_body, response_text, chat_log)
 
     message = client.messages.create(
         body=response_text,
@@ -236,3 +247,10 @@ if __name__ == "__main__":
     app.run(debug=True)
 
 
+"""
+Helper functions
+"""
+def append_interaction_to_chat_log(question, answer, chat_log=None):
+    if chat_log is None:
+        chat_log = start_chat_log
+    return f'{chat_log}Human: {question}\nAI: {answer}\n'
