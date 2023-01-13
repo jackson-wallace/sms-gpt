@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-start_chat_log = '''Human: Hello, who are you?
+start_chat_log = '''Human: Hello, how are you doing?
 AI: I am doing great. How can I help you today?
 '''
 
@@ -71,7 +71,6 @@ def sms_ahoy_reply():
             'subscribed': False,
             'stripe_customer_id': None,
             'message_count': 1,
-            'previous_messages': []
         })
 
     # If the user is in the database, retrieve their first text time and subscribed status
@@ -80,17 +79,10 @@ def sms_ahoy_reply():
         # Update the 'message_count' field in the database by incrementing it by 1
         user_ref.update({
             'message_count': user['message_count'] + 1,
-            'previous_messages': firestore.ArrayUnion([message_body])
         })
 
         user_ref = db.collection('user_data').document(sender)
         user = user_ref.get().to_dict()
-        previous_messages = user['previous_messages']
-        if len(previous_messages) > 3:
-            # Use update() to remove the first element of the 'previous_messages' array
-            user_ref.update({
-                'previous_messages': firestore.ArrayRemove([previous_messages[0]])
-            })
 
     # Check if the user is in the database
     user_ref = db.collection('user_data').document(sender)
