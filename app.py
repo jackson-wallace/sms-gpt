@@ -126,7 +126,17 @@ def sms_ahoy_reply():
 
     if subscribed and message_body.strip().lower() == "unsubscribe":
         # retrieve the subscription object from Stripe using the customer ID
-        subscription = stripe.Subscription.retrieve(user['stripe_customer_id'])
+        # subscription = stripe.Subscription.retrieve(user['stripe_customer_id'])
+        subscriptions = stripe.Subscription.list(customer=user['stripe_customer_id'])
+
+        for subscription in subscriptions.data:
+            if subscription.status == "active":
+                # customer has an active subscription
+                active_subscription_id = subscription.id
+
+        #retrieve the subscription by id
+        subscription = stripe.Subscription.retrieve(active_subscription_id)
+
         # cancel the subscription
         subscription.cancel()
 
