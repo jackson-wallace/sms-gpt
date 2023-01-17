@@ -124,6 +124,14 @@ def sms_ahoy_reply():
 
         return str(message)
 
+    if subscribed and message_body.strip().lower() == "unsubscribe":
+        # retrieve the subscription object from Stripe using the customer ID
+        subscription = stripe.Subscription.retrieve(user['stripe_customer_id'])
+        # cancel the subscription
+        subscription.cancel()
+
+        return ''
+
     """Respond to incoming messages with a receipt SMS."""
     chat_log = session.get('chat_log')
 
@@ -182,18 +190,19 @@ def handle_webhook():
     # Convert the payload to a dictionary
     payload_dict = json.loads(payload)
 
+    customer_id = payload_dict['data']['object']['customer']
+
+    # Retrieve the customer using their ID
+    customer = stripe.Customer.retrieve(customer_id)
+
+    # Extract the phone number from the customer object
+    phone_number = customer['phone']
+
+    user_ref = db.collection('user_data').document(phone_number)
+
     if event_type == 'customer.subscription.created':
-
-        customer_id = payload_dict['data']['object']['customer']
-
-        # Retrieve the customer using their ID
-        customer = stripe.Customer.retrieve(customer_id)
-
-        # Extract the phone number from the customer object
-        phone_number = customer['phone']
         
         # Update the "subscribed" field in the Firestore database for this customer
-        user_ref = db.collection('user_data').document(phone_number)
         user_ref.update({
             'subscribed': True,
             'stripe_customer_id': customer_id
@@ -225,6 +234,23 @@ def handle_webhook():
             to=phone_number,
         )
         print(message)
+
+    if event.type == 'customer.subscription.deleted':
+
+        # Update the "subscribed" field in the Firestore database for this customer
+        user_ref.update({
+            'subscribed': False,
+            'stripe_customer_id': 'None',
+        })
+        response_text = "Your subscription has been successfully cancelled."
+        message = client.messages.create(
+        body=response_text,
+        from_= twilio_phone_number,
+        to=phone_number
+        )
+
+        print(message)
+
     
     return "", 200
 
