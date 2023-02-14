@@ -33,7 +33,7 @@ db = firestore.client()
 
 # Get environment variables
 openai_api_key = os.environ.get('OPENAI_API_KEY')
-stripe_test_secret_key = os.environ.get('STRIPE_test_SECRET_KEY')
+stripe_test_secret_key = os.environ.get('STRIPE_TEST_SECRET_KEY')
 twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
 twilio_auth_token = os.environ.get('TWILIO_AUTO_TOKEN')
 twilio_phone_number = os.environ.get('TWILIO_PHONE_NUMBER')
