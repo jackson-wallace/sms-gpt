@@ -105,7 +105,7 @@ def sms_ahoy_reply():
             line_items=[
                 {
                     # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': 'price_1MbQQcDntfrNaBriJCIvkXyN',
+                    'price': 'price_1MJhvzDntfrNaBriGgMwEYLy',
                     'quantity': 1,
                 },
             ],
