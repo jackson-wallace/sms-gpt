@@ -91,6 +91,10 @@ def sms_ahoy_reply():
     
 
     # If the user's not subscribed, send a message asking them to subscribe
+    """
+    3.
+    If not subscribed and user has not signed up with stripe before
+    """
     if not subscribed:
         
         # Create a stripe checkout session
@@ -101,7 +105,7 @@ def sms_ahoy_reply():
             line_items=[
                 {
                     # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': 'price_1MJhvzDntfrNaBriGgMwEYLy',
+                    'price': 'price_1MbQQcDntfrNaBriJCIvkXyN',
                     'quantity': 1,
                 },
             ],
@@ -124,9 +128,18 @@ def sms_ahoy_reply():
 
         return str(message)
 
+    """
+    4.
+    If not subscribed and user has signed up with stripe
+        - if message body != SUBSCRIBE
+            - send a message "your subscription is currently cancelled, text SUBSCRIBE to this number to reactivate your subscription"
+        else:
+            - unpause subscription
+    """
+
     if subscribed and message_body.strip().lower() == "unsubscribe":
-        # retrieve the subscription object from Stripe using the customer ID
-        # subscription = stripe.Subscription.retrieve(user['stripe_customer_id'])
+
+        # Get subscription list with customer ID 
         subscriptions = stripe.Subscription.list(customer=user['stripe_customer_id'])
 
         for subscription in subscriptions.data:
@@ -136,6 +149,11 @@ def sms_ahoy_reply():
 
         #retrieve the subscription by id
         subscription = stripe.Subscription.retrieve(active_subscription_id)
+
+        """
+        2. 
+        Change to pause subscription instead of cancel
+        """
 
         # cancel the subscription
         subscription.cancel()
@@ -245,6 +263,12 @@ def handle_webhook():
         )
         print(message)
 
+    """
+    1. 
+    Change this to be customer.subsctiption.updated
+        if paused then ...
+        elif unpaused then send "thank you for unpausing your subscription" or similar message
+    """
     if event.type == 'customer.subscription.deleted':
 
         # Update the "subscribed" field in the Firestore database for this customer
@@ -252,7 +276,7 @@ def handle_webhook():
             'subscribed': False,
             'stripe_customer_id': 'None',
         })
-        response_text = "Your subscription has been successfully cancelled."
+        response_text = "Your subscription has successfully been cancelled."
         message = client.messages.create(
         body=response_text,
         from_= twilio_phone_number,
