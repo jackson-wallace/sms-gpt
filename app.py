@@ -204,7 +204,7 @@ def handle_webhook():
 
     # Try to construct the event using the payload and signature
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, "whsec_l1lJHeQ2REH11D3gftbwyCbyH4kHtrdx")
+        event = stripe.Webhook.construct_event(payload, sig_header, "we_1MbQTsDntfrNaBrivBH7osrR")
 
     except Exception as e:
         # If an exception is raised, it means the event could not be constructed
