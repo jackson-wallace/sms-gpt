@@ -1,8 +1,6 @@
 import os
 import openai
-import datetime
-import stripe
-from flask import Flask, request, render_template, url_for, abort, redirect, session
+from flask import Flask, request, session
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 
@@ -11,13 +9,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 # Get environment variables
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 twilio_account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
 twilio_auth_token = os.environ.get("TWILIO_AUTO_TOKEN")
 twilio_phone_number = os.environ.get("TWILIO_PHONE_NUMBER")
-
 
 # Set OpenAI API key
 openai.api_key = openai_api_key
@@ -39,13 +35,14 @@ def sms_ahoy_reply():
     message_body = request.form["Body"]
     sender = request.form["From"]
 
-    """Respond to incoming messages with a receipt SMS."""
+    # Get the chat log from the session or start a new one
     chat_log = session.get("chat_log")
 
     if chat_log is None:
         chat_log = start_chat_log
 
     prompt = f"{chat_log}Human: {message_body}\nAI:"
+
     # Use ChatGPT to generate a response
     response = openai.Completion.create(
         engine="text-davinci-003",
@@ -56,9 +53,9 @@ def sms_ahoy_reply():
     )
     response_text = response["choices"][0]["text"]
 
-    session["chat_log"] = append_interaction_to_chat_log(
-        message_body, response_text, chat_log
-    )
+    # Update the chat log with the current interaction
+    chat_log = append_interaction_to_chat_log(message_body, response_text, chat_log)
+    session["chat_log"] = chat_log
 
     message = client.messages.create(
         body=response_text, from_=twilio_phone_number, to=sender
