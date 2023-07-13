@@ -15,7 +15,7 @@ To interact with the chatbot, send an SMS message to the specified phone number.
 
 ## Screenshots
 
-![Screenshot 1](screenshots/screenshot1.png)
+![Screenshot 1](screenshots/screenshot1.PNG)
 
 *Example conversation:*
 
