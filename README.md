@@ -4,7 +4,7 @@ This is a simple Flask application that integrates with OpenAI's API and Twilio 
 
 ## How It Works
 
-1. The user sends a text to +1(865)424-7665.
+1. The user sends a text to +1 (865) 424-7665.
 2. Twilio forwards the message to the Flask application.
 3. The Flask application uses the OpenAI API to generate a response based on the user's message and the conversation history.
 4. The generated response is sent back to the user as an SMS message.
