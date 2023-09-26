@@ -15,15 +15,8 @@ To interact with the chatbot, send an SMS message to the specified phone number.
 
 ## Screenshots
 
-![Screenshot 1](screenshots/screenshot1.png)
-
-*Example conversation:*
-
-```
-User: Hello, how are you?
-Chatbot: I am doing great. How can I help you today?
-User: What is the capital of France?
-Chatbot: The capital of France is Paris.
-User: How tall is Mount Everest?
-Chatbot: Mount Everest is approximately 8,848 meters (29,029 feet) tall.
-```
+<div style="display:flex; justify-content:center">
+  <img src="screenshots/screenshot1.jpg" alt="Screenshot 1" style="margin-right: 10px; width: 30%;">
+  <img src="screenshots/screenshot2.PNG" alt="Screenshot 2" style="margin-right: 10px; width: 30%;">
+  <img src="screenshots/screenshot3.PNG" alt="Screenshot 3" style="width: 30%;">
+</div>
